@@ -4,6 +4,7 @@ Please don't edit without telling me.
 
 To-do list:
 1. Come up with a better way of discerning between template types. Maybe an invisible number in the corner?
+2. I actually managed to do a thing and open the GitHub repository and stuff.
 */
 
 
