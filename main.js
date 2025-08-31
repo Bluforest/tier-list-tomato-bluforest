@@ -9,7 +9,7 @@ var uniqueHeightsIdxs = 0;
 
 var formulaFront = 'HLOOKUP("';
 var formulaMid = '", INDIRECT("data!$A$1:$ZR$200"), MATCH(REGEXEXTRACT(TO_TEXT(';
-var formulaEnd = '),"[\\w\\s.-]*"), data!$A$1:$A$200, 0),FALSE)';
+var formulaEnd = '),"[\\w\\s.-\\(\\)]*"), data!$A$1:$A$200, 0),FALSE)';
 var nChars = 0;
 var currentPatch = 0;
 var nameCell = '';
@@ -26,7 +26,7 @@ var finalTLName = '';
 var linkedCellsRows = [];
 var linkedCellsCols = [];
 var getNames = null;
-var variableRowHeights = []
+var variableRowHeights = [];
 
 
 function loadConstsTL() {
@@ -48,7 +48,7 @@ function loadConstsTL() {
   formatSheetName = valueList[varNameList.indexOf("formatSheetName")];
   baseSheetName = valueList[varNameList.indexOf("baseSheetName")];
   tierSheetName = valueList[varNameList.indexOf("tierSheetName")];
-  finalTLName = 'Arcanist Tierlist for export';
+  finalTLName = 'Arcanist Tier List for export';
   linkedCellsRows = [valueList[varNameList.indexOf("linkedCellsRows")]];
   linkedCellsCols = [valueList[varNameList.indexOf("linkedCellsCols")]];
   getNames=sortNames;
@@ -61,7 +61,7 @@ function loadConstsTL() {
 
 
 function loadConstsTeam() {
-  nChars = 9;
+  nChars = 14;
 
   nameCell = 'B2';
   nameCol = 2;
@@ -73,11 +73,11 @@ function loadConstsTeam() {
   formatSheetName = 'team search_keys';
   baseSheetName = 'team base copy paste source';
   tierSheetName = 'team prototype';
-  finalTLName = 'team for export';
+  finalTLName = 'Team Tier List for export';
   linkedCellsRows = [];
   linkedCellsCols = [];
   variableRowHeights = [];
-  getNames = colANames;
+  getNames = teamNames;
 
   formulaFront = 'HLOOKUP("';
   formulaMid = '", INDIRECT("' + dataSheetName + '!$A$1:$ZR$200"), MATCH(REGEXEXTRACT(TO_TEXT(';
@@ -102,7 +102,7 @@ function loadConstsExp() {
   linkedCellsRows = [];
   linkedCellsCols = [];
   variableRowHeights = [4];
-  getNames=colANames;
+  getNames = colANames;
 
   formulaFront = 'HLOOKUP("';
   formulaMid = '", INDIRECT("' + dataSheetName + '!$A$1:$ZR$200"), MATCH(REGEXEXTRACT(TO_TEXT(';
@@ -113,16 +113,10 @@ function loadConstsExp() {
 function sortNames(n) {
   // TODO change manually offsetting for correct columns to auto
   var dataSheet = SpreadsheetApp.getActive().getSheetByName(dataSheetName);
-  // const headerRow = [].concat(...dataSheet.getRange(1, 1, 1, dataSheet.getMaxColumns()).getValues());
-  // var charDisplayNames = dataSheet.getRange(2, [].concat(...dataSheet.getRange(1, 1, 1, dataSheet.getMaxColumns()).getValues()).indexOf("display_name") + 1, nChars).getValues();
-  // var hasModule = dataSheet.getRange(2, [].concat(...dataSheet.getRange(1, 1, 1, dataSheet.getMaxColumns()).getValues()).indexOf("module") + 1, nChars).getValues();
-  // var normalScores = dataSheet.getRange(2, [].concat(...dataSheet.getRange(1, 1, 1, dataSheet.getMaxColumns()).getValues()).indexOf("final_score") + 1, nChars).getValues();
-  // var euphoScores = dataSheet.getRange(2, [].concat(...dataSheet.getRange(1, 1, 1, dataSheet.getMaxColumns()).getValues()).indexOf("final_score_module") + 1, nChars).getValues();
-  // var euphoPatch = dataSheet.getRange(2, [].concat(...dataSheet.getRange(1, 1, 1, dataSheet.getMaxColumns()).getValues()).indexOf("euphoria_patch") + 1, nChars).getValues();
   var sheetValues = dataSheet.getRange(1, 1, nChars+1, dataSheet.getMaxColumns()).getValues()
   const headerRow = sheetValues[0];
   sheetValues.splice(0, 1);
-  const headerNames = ["module", "display_name", "final_score", "final_score_module", "euphoria_patch"];
+  /* const headerNames = ["module", "display_name", "final_score", "final_score_module", "euphoria_patch"];
   let indexes = {};
   let searchIndex =  0;
   for (let i = 0; i < headerRow.length; i++) {
@@ -137,7 +131,6 @@ function sortNames(n) {
   for (let i = searchIndex; i < headerNames.length; i++){
     indexes[headerNames[searchIndex]] = -1
   };
-  // const indexes = {"display_name": headerRow.indexOf("display_name"), "module": headerRow.indexOf("module"), "final_score": headerRow.indexOf("final_score"), "final_score_module": headerRow.indexOf("final_score_module"), "euphoria_patch": headerRow.indexOf("euphoria_patch")};
   const charDisplayNames = sheetValues.map((a) => [a[indexes["display_name"]]]);
   const hasModule = sheetValues.map((a) => [a[indexes["module"]]]);
   const normalScores = sheetValues.map((a) => [a[indexes["final_score"]]]);
@@ -150,17 +143,46 @@ function sortNames(n) {
     }
     mergedScores[i] = [charDisplayNames[i], mergedScores[i], hasModule[i]];
   }
-  mergedScores.sort((a, b) => b[1][0] - a[1][0]);
-  return [mergedScores.map((a) => a[0]), mergedScores.map((a) => a[2])];
+  mergedScores.sort((a, b) => b[1][0] - a[1][0]); 
+  return [mergedScores.map((a) => a[0]), mergedScores.map((a) => a[2])]; */
+  const headerNames = ["module", "display_name"];
+  let indexes = {};
+  let searchIndex =  0;
+  for (let i = 0; i < headerRow.length; i++) {
+    if(headerRow[i] === headerNames[searchIndex]){
+      indexes[headerRow[i]] = i
+      searchIndex++
+    };
+    if(searchIndex === headerRow.length){
+      break;
+    };
+  };
+  for (let i = searchIndex; i < headerNames.length; i++){
+    indexes[headerNames[searchIndex]] = -1
+  };
+  const charDisplayNames = sheetValues.map((a) => [a[indexes["display_name"]]]);
+  const hasModule = sheetValues.map((a) => [a[indexes["module"]]]);
+  return [charDisplayNames, hasModule];
 }
 
 
 function colANames(n) {
   var dataSheet = SpreadsheetApp.getActive().getSheetByName(dataSheetName);
-  var changeVer = dataSheet.getRange('A2:A' + (nChars + 1)).getValues();
-  var reserved = dataSheet.getRange('C2:C' + (nChars + 1)).getValues();
-  return [changeVer, reserved];
+  var colA = dataSheet.getRange('A2:A' + (nChars + 1)).getValues();
+  var reserved = [];
+  (reserved).length = n;
+  reserved.fill(0);
+  return [colA, null];
 }
+
+
+function teamNames(n) {
+  var dataSheet = SpreadsheetApp.getActive().getSheetByName(dataSheetName);
+  var [names, template] = colANames(n);
+  template = dataSheet.getRange('AD2:AD' + (nChars + 1)).getValues();
+  return [names, template];
+}
+
 
 function makeBase(startRow, endRow, nameAddr) {
   var labeledSheet = SpreadsheetApp.getActive().getSheetByName(formatSheetName);
@@ -223,11 +245,16 @@ function make_tierlist() {
 
   for (var i = 0; i < nChars; i++) {
     var source;
-    if (hasModule[i][0]) {
-      source = sourceRangeModule;
+    if (hasModule) {
+      if (hasModule[i][0]) {
+        source = sourceRangeModule;
+      } else {
+        source = sourceRange;
+      }
     } else {
       source = sourceRange;
     }
+
     var targetRange = tierSheet.getRange(i * height + 1, 1);
     source.copyTo(targetRange);
     source.copyTo(targetRange, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
@@ -244,7 +271,15 @@ function make_tierlist() {
   source.copyTo(targetRange, SpreadsheetApp.CopyPasteType.PASTE_COLUMN_WIDTHS, false);
 
   //Untested BUT this should trim the excess columns
-  //tierSheet.deleteColumns(width+1, width+6)
+  // it breaks if there are no excess columns
+  try {
+    tierSheet.deleteColumns(width+1, tierSheet.getMaxColumns()-width)
+  } catch (ball) {}
+
+  // TODO fix the final row 
+  tierSheet.getRange("A:A").copyTo(tierSheet.getRange(nChars*height+1, 1, 1, tierSheet.getMaxColumns()));
+  tierSheet.setRowHeightsForced(nChars*height+1, 1, tierSheet.getRowHeight(1));
+  tierSheet.deleteRows(nChars*height+2, tierSheet.getMaxRows()-(nChars*height+1));
 }
 
 
@@ -269,9 +304,16 @@ function makeExport(){
 }
 
 function teambuildingCleanup() {
+  //UI Alert
+  const ui = SpreadsheetApp.getUi()
+  var alert = ui.alert("Make sure you're running this on a COPY of the draft teambuilding sheet. NOWHERE ELSE!\nIf you're trying to run this anywhere else, press \"Cancel\" immediately. Otherwise, press \"OK\".", ui.ButtonSet.OK_CANCEL)
+  if (alert != ui.Button.OK) {
+    return
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getActiveSheet();
-  const original = ss.getSheetByName("Draft Teambuilding Tierlist");
+  const original = ss.getSheetById(1208169882);
 
   var colMax = sheet.getMaxColumns();
   var rowMax = sheet.getMaxRows();
@@ -281,6 +323,9 @@ function teambuildingCleanup() {
   sheet.getRange(1,1,rowMax,colMax).setBackgrounds(original.getRange(1,1,rowMax,colMax).getBackgrounds());
 
   for (var col = 1; col <= colMax; col++) {
+    //Log
+    Logger.log((col+9).toString(36).toUpperCase)
+
     //Top Row
     if (sheet.getRange(2,col).getValue() == "CellImage") {
       sheet.getRange(2,col).copyTo(sheet.getRange(2,col), {contentsOnly: true});
@@ -289,12 +334,11 @@ function teambuildingCleanup() {
     //Everything Else
     if (sheet.getRange(5,col).getValue() == "CellImage") {
       sheet.getRange(5,col,colMax-6).copyTo(sheet.getRange(5,col,colMax-6), {contentsOnly: true});
-    }
-    //Eternity Exception
-    else if (sheet.getRange(7,col).getValue() == "CellImage") {
-      sheet.getRange(7,col,colMax-8).copyTo(sheet.getRange(7,col,colMax-8), {contentsOnly: true});
+      col++
     }
   }
+
+  var endAlert = ui.alert("Teambuilding Cleanup has finished.\nYou can now export the sheet to the main tier list by selecting Copy To > Existing Spreadsheet in the sheet options menu below.", ui.ButtonSet.OK)
 }
 
 
@@ -324,8 +368,10 @@ function onEdit(e) {
       return;
     }
 
-    sheet.getRange(editRow-1, editCol+1).setValue(lookupSheet.getRange(lookupRow+2, 9).getValue());
-    sheet.getRange(editRow-1, editCol+1).setTextStyle(lookupSheet.getRange(lookupRow+2, 9).getTextStyle());
+    var lookupColumn = [].concat(...lookupSheet.getRange("1:1").getValues()).indexOf("[DON'T EDIT HERE] Autofill Tags and Explanations")+1
+
+    sheet.getRange(editRow-1, editCol+1).setValue(lookupSheet.getRange(lookupRow+2, lookupColumn).getValue());
+    sheet.getRange(editRow-1, editCol+1).setTextStyle(lookupSheet.getRange(lookupRow+2, lookupColumn).getTextStyle());
   
   } catch (error) {
     throw(error);
@@ -358,15 +404,9 @@ function boldEssential() {
         continue;
       }
       // manually offsetting for where name is
-      exportSheet2.getRange(i+14, 2*j + 2).setFontWeight("bold");
-      exportSheet2.getRange(i+14, 2*j + 2).setFontSize(11);
-      exportSheet2.getRange(i+14, 2*j + 2).setVerticalAlignment("middle");
-      exportSheet2.getRange(i+14, 2*j + 3).setFontWeight("bold");
-      exportSheet2.getRange(i+14, 2*j + 3).setFontSize(11);
-      exportSheet2.getRange(i+14, 2*j + 3).setVerticalAlignment("middle");
-      exportSheet2.getRange(i+15, 2*j + 2).setFontWeight("bold");
-      exportSheet2.getRange(i+15, 2*j + 2).setFontSize(11);
-      exportSheet2.getRange(i+15, 2*j + 2).setVerticalAlignment("middle");
+      exportSheet2.getRange(i+15, 2*j + 2).setFontWeight("bold").setVerticalAlignment("middle").setFontSize(13);
+      exportSheet2.getRange(i+15, 2*j + 3).setFontWeight("bold").setVerticalAlignment("middle").setFontSize(13);
+      exportSheet2.getRange(i+16, 2*j + 2).setFontWeight("bold").setVerticalAlignment("middle").setFontSize(13);
     }
   }
 }
@@ -402,33 +442,102 @@ function boldScores() {
   }
 }
 
+function rowResizeOnExport() {
+  // const ss = SpreadsheetApp.getActive()
+  // const exportSheet = ss.getSheetByName("Arcanist Tier List for export")
+  // const baseSheet = ss.getSheetByName("prototype")
+  // const conSheet = ss.getSheetByName("consts");
+
+  // const varNameList = [].concat(...conSheet.getRange(1, 1, conSheet.getMaxRows()).getValues()).filter(Boolean);
+  // const valueList = [].concat(...conSheet.getRange(1, 2, conSheet.getMaxRows()).getValues()).filter(Boolean);
+  // var nCharsLocal = valueList[varNameList.indexOf("nChars")];
+  // var heightLocal = valueList[varNameList.indexOf("height")];
+
+  // var rowHeightList = []
+
+  // for (var i = 1; i <= heightLocal; i++) {
+  //   rowHeightList.push(baseSheet.getRowHeight(i))
+  // }
+
+  // // bruh extremely slow
+  // for (var i = 0; i < nCharsLocal; i++) {
+  //   for (j in rowHeightList) {
+  //     exportSheet.setRowHeightsForced(i*heightLocal+j+1, 1, rowHeightList[j])
+  //   }
+  // }
+
+  // slightly more efficient
+  var labeledSheet = SpreadsheetApp.getActive().getSheetByName(formatSheetName);
+  for (var r = 1; r <= height; r++) {
+    rowHeights[r-1] = labeledSheet.getRowHeight(r);
+  }
+
+  var lastVal = rowHeights[0];
+  var curVal;
+  uniqueHeightsIdxs = 0;
+  rowHeightIndex[0] = 0;
+  rowHeightN[0] = 1;
+  for (var r = 1; r < height; r++) {
+    curVal = rowHeights[r];
+    if (lastVal == curVal) {
+      rowHeightN[uniqueHeightsIdxs] += 1;
+    } else {
+      uniqueHeightsIdxs++;
+      rowHeightIndex[uniqueHeightsIdxs] = r;
+      rowHeightN[uniqueHeightsIdxs] = 1
+    }
+    lastVal = curVal;
+  }
+
+  var exportSheet = SpreadsheetApp.getActive().getSheetByName(finalTLName);
+  for (var i = 0; i < nChars; i++) {
+    for (var j = 0; j <= uniqueHeightsIdxs; j++) {
+      exportSheet.setRowHeightsForced(rowHeightIndex[j] + (i * height) + 1, rowHeightN[j], rowHeights[rowHeightIndex[j]]);
+    }
+    for (var j = 0; j < variableRowHeights.length; j++) {
+      exportSheet.setRowHeight((variableRowHeights[j] + (i * height)), 100);
+    }
+  }
+}
+
 
 function renderTL() {
   loadConstsTL();
   make_bases();
   make_tierlist();
-  SpreadsheetApp.flush();
-  Utilities.sleep(1000);
-  SpreadsheetApp.flush();
+  // youre supposed to do this but its prohibitively slow for this sheet, just run export after manually
+  // SpreadsheetApp.flush();
+  // Utilities.sleep(1000);
+  // SpreadsheetApp.flush();
   makeExport();
-  boldScores();
+  
   // Row Resize, kinda slow, refactor this prettier later
-  var tierSheet = SpreadsheetApp.getActive().getSheetByName(finalTLName);
+  
+  /*
+  var exportSheet = SpreadsheetApp.getActive().getSheetByName(finalTLName);
   for (var i = 0; i < nChars; i++) {
     for (var j = 0; j <= uniqueHeightsIdxs; j++) {
-      tierSheet.setRowHeightsForced(rowHeightIndex[j] + (i * height) + 1, rowHeightN[j], rowHeights[rowHeightIndex[j]]);
+      exportSheet.setRowHeightsForced(rowHeightIndex[j] + (i * height) + 1, rowHeightN[j], rowHeights[rowHeightIndex[j]]);
     }
     for (var j = 0; j < variableRowHeights.length; j++) {
-      tierSheet.setRowHeight((variableRowHeights[j] + (i * height)), 100);
+      exportSheet.setRowHeight((variableRowHeights[j] + (i * height)), 100);
     }
   }
+  */
+}
+
+
+function setHeightsTL() {
+  loadConstsTL();
+  rowResizeOnExport();
 }
 
 
 function makeExportTL() {
   loadConstsTL();
   makeExport();
-  boldScores();
+  loadConstsTL();
+  rowResizeOnExport()
 }
 
 
@@ -474,4 +583,3 @@ function makeExportTeam() {
   makeExport();
   boldEssential();
 }
-
